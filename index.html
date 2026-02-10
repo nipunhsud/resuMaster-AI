@@ -8,76 +8,133 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
       body {
         font-family: 'Inter', sans-serif;
-        background-color: #f8fafc;
+        background-color: #050505;
+        color: #e2e8f0;
+        margin: 0;
+        overflow-x: hidden;
       }
+
+      /* Monospaced Editor */
+      .markdown-editor {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        line-height: 1.6;
+        tab-size: 4;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      /* Container for the paper to allow horizontal scroll on small screens */
+      .paper-scroll-container {
+        width: 100%;
+        overflow-x: auto;
+        display: flex;
+        justify-content: center;
+        padding: 2rem 0;
+      }
+
+      /* Resume Paper Preview (Word Look) */
+      .resume-paper {
+        background: #ffffff;
+        width: 210mm;
+        min-height: 297mm;
+        padding: 20mm;
+        margin: 0 auto;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        font-family: 'Lora', serif;
+        color: #000000 !important;
+        outline: none;
+        box-sizing: border-box;
+        text-align: left;
+        flex-shrink: 0; /* Prevent squishing */
+      }
+
+      /* Ensure all generated markdown elements in preview are black */
+      .resume-content h1, 
+      .resume-content h2, 
+      .resume-content h3, 
+      .resume-content p, 
+      .resume-content li,
+      .resume-content strong {
+        color: #000000 !important;
+      }
+
+      .resume-content h1 { 
+        font-family: 'Inter', sans-serif;
+        font-size: 24pt; 
+        font-weight: 700; 
+        text-align: center; 
+        margin-bottom: 8pt; 
+        border-bottom: 1.5pt solid #333; 
+        padding-bottom: 4pt;
+        line-height: 1.2;
+      }
+      
+      .resume-content h1 + p {
+        text-align: center;
+        font-size: 10pt;
+        color: #444 !important;
+        margin-bottom: 15pt;
+        font-family: 'Inter', sans-serif;
+      }
+
+      .resume-content h2 { 
+        font-family: 'Inter', sans-serif;
+        font-size: 13pt; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        margin-top: 18pt; 
+        border-bottom: 1pt solid #cbd5e0; 
+        padding-bottom: 3pt; 
+        margin-bottom: 8pt; 
+        color: #1e3a8a !important; 
+      }
+
+      .resume-content h3 { 
+        font-family: 'Inter', sans-serif;
+        font-size: 11.5pt; 
+        font-weight: 700; 
+        margin-top: 10pt; 
+        margin-bottom: 4pt; 
+        color: #111 !important;
+      }
+
+      .resume-content p { font-size: 10.5pt; line-height: 1.5; margin-bottom: 8pt; }
+      .resume-content ul { padding-left: 18pt; list-style-type: disc; margin-bottom: 10px; }
+      .resume-content li { margin-bottom: 4pt; font-size: 10.5pt; line-height: 1.5; }
+
+      /* Custom scrollbar for better look */
+      .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
 
       @media print {
-        /* Hide everything by default */
-        header, footer, .no-print, button, aside, .sidebar-stats {
-          display: none !important;
-        }
-
-        /* Reset layout for print */
-        body {
-          background-color: white !important;
-          margin: 0;
-          padding: 0;
-        }
-
-        main {
-          margin: 0 !important;
-          padding: 0 !important;
-          max-width: 100% !important;
-          width: 100% !important;
-        }
-
-        /* Target the resume container specifically */
-        .resume-paper {
-          border: none !important;
-          box-shadow: none !important;
-          padding: 0 !important;
-          margin: 0 !important;
-          width: 100% !important;
-          min-height: auto !important;
-        }
-
-        .resume-content {
-          font-size: 11pt !important;
-          line-height: 1.5 !important;
-          color: black !important;
-        }
-
-        /* Avoid page breaks inside sections if possible */
-        .resume-content h1, 
-        .resume-content h2, 
-        .resume-content h3 {
-          page-break-after: avoid;
-        }
-
-        @page {
-          margin: 2cm;
-        }
+        header, footer, .no-print { display: none !important; }
+        body { background: white; }
+        .resume-paper { box-shadow: none; width: 100%; margin: 0; padding: 0; }
+        .paper-scroll-container { padding: 0; overflow: visible; }
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "jspdf": "https://esm.sh/jspdf@^2.5.1",
-    "html2canvas": "https://esm.sh/html2canvas@^1.4.1",
-    "pdfjs-dist": "https://esm.sh/pdfjs-dist@4.10.38",
-    "mammoth": "https://esm.sh/mammoth@^1.6.0"
-  }
-}
-</script>
-</head>
+    <script type="importmap">
+    {
+      "imports": {
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "react": "https://esm.sh/react@^19.2.3",
+        "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "pdf-lib": "https://esm.sh/pdf-lib@1.17.1",
+        "pdfjs-dist": "https://esm.sh/pdfjs-dist@4.10.38",
+        "mammoth": "https://esm.sh/mammoth@^1.6.0",
+        "marked": "https://esm.sh/marked@^12.0.0"
+      }
+    }
+    </script>
+  </head>
   <body>
     <div id="root"></div>
   </body>

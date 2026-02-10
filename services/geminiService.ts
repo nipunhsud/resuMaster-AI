@@ -8,40 +8,46 @@ export class GeminiService {
       Optimize the following resume for the target job title: "${data.targetTitle}" 
       at a "${data.seniority}" seniority level.
       
-      Resume Content:
+      TARGET JOB DESCRIPTION:
+      ---
+      ${data.jobDescription || "Not provided - use general industry standards for " + data.targetTitle}
+      ---
+
+      RESUME CONTENT:
       ---
       ${data.content}
       ---
       
-      Additional User Context:
+      ADDITIONAL USER CONTEXT:
       ${data.additionalContext || "None provided"}
       
-      Instructions:
-      1. Rewrite the professional summary and experience descriptions to highlight skills relevant to a ${data.targetTitle}.
-      2. Adjust the tone and complexity of the language to match the ${data.seniority} level.
-      3. Use active, high-impact verbs.
-      4. Ensure the output is formatted clearly in Markdown.
-      5. Identify 5-8 highly relevant skills that should be emphasized.
-      6. Provide a short list of the most significant changes made.
-      7. Estimate a hypothetical ATS compatibility score (0-100) based on standard keyword matching for this role.
+      STRICT FORMATTING INSTRUCTIONS (FOR PDF CAPTURE STABILITY):
+      1. Use # for the Person's Name at the very top.
+      2. Second line must be a simple paragraph for contact info (Phone | Email | Location | LinkedIn). Use simple pipes "|" as separators.
+      3. Use ## for Section Headers.
+      4. Use ### for Job Titles or Degrees.
+      5. Use simple bullet points (-) for achievements.
+      6. IMPORTANT: DO NOT use complex nested structures or "Key: Value" pairs on the same line if they exceed 50 characters. 
+      7. DO NOT use justified text. All content must be naturally left-aligned.
+      8. DO NOT use manual space bars or tabs to align text columns.
+      9. Focus on impactful, quantifiable achievements that directly match the Job Description.
+      10. Output strictly clean, standard Markdown.
     `;
 
     try {
-      // Fix: Always use process.env.API_KEY directly when initializing.
-      // Fix: Create instance right before generating content.
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
-        contents: prompt,
+        model: 'gemini-3-flash-preview',
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
-          temperature: 0.7,
+          temperature: 0.1,
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
             properties: {
               optimizedContent: {
                 type: Type.STRING,
-                description: "The full rewritten resume in Markdown format."
+                description: "The full rewritten resume in standard, left-aligned Markdown."
               },
               keyChanges: {
                 type: Type.ARRAY,
@@ -55,7 +61,7 @@ export class GeminiService {
               },
               atsScore: {
                 type: Type.INTEGER,
-                description: "A calculated score from 0-100."
+                description: "A calculated score from 0-100 based on matching the Job Description."
               }
             },
             required: ["optimizedContent", "keyChanges", "suggestedSkills", "atsScore"]
@@ -63,12 +69,17 @@ export class GeminiService {
         }
       });
 
-      // Fix: response.text is a property getter, do not call as a function.
-      const result = JSON.parse(response.text || "{}");
+      const text = response.text;
+      if (!text) {
+        throw new Error("No response text received from AI.");
+      }
+      
+      const result = JSON.parse(text);
       return result as OptimizationResult;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Optimization failed:", error);
-      throw new Error("Failed to optimize resume. Please check your input and try again.");
+      const errorMessage = error.message || "Unknown error";
+      throw new Error(`Optimization failed: ${errorMessage}. Please try again.`);
     }
   }
 }

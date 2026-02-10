@@ -12,6 +12,7 @@ export interface ResumeData {
   content: string;
   targetTitle: string;
   seniority: SeniorityLevel;
+  jobDescription?: string;
   additionalContext?: string;
 }
 
