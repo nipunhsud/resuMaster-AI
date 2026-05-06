@@ -31,26 +31,30 @@
       /* Container for the paper to allow horizontal scroll on small screens */
       .paper-scroll-container {
         width: 100%;
-        overflow-x: auto;
+        overflow: auto !important; /* Allow both X and Y scrolling */
         display: flex;
-        justify-content: center;
-        padding: 2rem 0;
+        flex-direction: column;
+        align-items: center;
+        padding: 3rem 0;
+        background: #0a0a0a;
       }
 
       /* Resume Paper Preview (Word Look) */
       .resume-paper {
-        background: #ffffff;
+        background: #ffffff !important;
         width: 210mm;
         min-height: 297mm;
+        height: auto !important;
         padding: 20mm;
-        margin: 0 auto;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        margin: 0 auto 4rem auto;
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
         font-family: 'Lora', serif;
         color: #000000 !important;
         outline: none;
         box-sizing: border-box;
         text-align: left;
-        flex-shrink: 0; /* Prevent squishing */
+        flex-shrink: 0;
+        display: block; /* Ensure it's block to contain content flow */
       }
 
       /* Ensure all generated markdown elements in preview are black */
@@ -134,8 +138,10 @@
       }
     }
     </script>
-  </head>
+  <link rel="stylesheet" href="/index.css">
+</head>
   <body>
     <div id="root"></div>
-  </body>
+  <script type="module" src="/index.tsx"></script>
+</body>
 </html>
